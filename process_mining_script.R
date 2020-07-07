@@ -38,7 +38,7 @@ write.csv2(merged_logs, 'MergedDeclarations.csv', quote = FALSE, row.names = FAL
 
 domestic_dec <- read.csv2('DomesticDeclarations.csv', check.names=FALSE)
 international_dec <- read.csv2('InternationalDeclarations.csv', check.names=FALSE)
-travel_cost <- read.csv2('PrepaidTravelCost.csv', check.names=FALSE)
+#travel_cost <- read.csv2('PrepaidTravelCost.csv', check.names=FALSE)
 
 domestic_dec$Timestamp <- as.POSIXct(domestic_dec$Timestamp, format = "%d.%m.%Y %H:%M")
 domestic_dec$status <- "completed"
@@ -85,14 +85,9 @@ domestic_log_flagRej <- domestic_log %>%
 domestic_log_flagRej$caseid <- as.numeric(domestic_log_flagRej$caseid)
 
 
-# Both flags can never be FALSE at the same time. Indication of faulty log.
+# Both flags can never be FALSE at the same time. Indication of faulty log or saved for later declarations.
 domestic_log_flagRejClean <- domestic_log_flagRej %>% filter(rejected_flag == TRUE |approved_flag == TRUE)
 
-# Number of Rejected Declarations at various points
-sum(domestic_log_flagRejClean$rejected_flag)
-
-# Number of Never Approved Declarations 
-nrow(domestic_log_flagRejClean)-sum(domestic_log_flagRejClean$approved_flag)
 
 
 ### International 
@@ -105,15 +100,21 @@ international_log_flagRej <- international_log %>%
 international_log_flagRej$caseid <- as.numeric(international_log_flagRej$caseid)
 
 
-# Both flags can never be FALSE at the same time. Indication of faulty log.
+# Both flags can never be FALSE at the same time. Indication of faulty log or saved for later declarations.
 international_log_flagRejClean <- international_log_flagRej %>% filter(rejected_flag == TRUE |approved_flag == TRUE)
 
 # Answers
 
-# Number of Rejected Declarations at various points
+# Number of Rejected Declarations at various points(domestic)
+sum(domestic_log_flagRejClean$rejected_flag)
+
+# Number of Never Approved Declarations (domestic)
+nrow(domestic_log_flagRejClean)-sum(domestic_log_flagRejClean$approved_flag)
+
+# Number of Rejected Declarations at various points(international)
 sum(international_log_flagRejClean$rejected_flag)
 
-# Number of Never Approved Declarations 
+# Number of Never Approved Declarations (international)
 nrow(international_log_flagRejClean)-sum(international_log_flagRejClean$approved_flag)
 
 
@@ -149,7 +150,7 @@ international_resubmitted_2 <- international_resubmitted %>%
   filter(`concept:name` == "End trip")
   
 
-# Extracting above mentioned declarations an - Assumption: End Trip date and first submission after end trip date WRITE SOMETHING MORE MEANINGFUL HERE
+# Calculate the date difference
 
 international_resubmitted_3 <- international_resubmitted %>%
   filter(caseid %in% international_resubmitted_2$caseid) %>%
@@ -162,6 +163,3 @@ international_resubmitted_3$difference_date <- international_resubmitted_3$diffe
 
 # Answer to question 3
 nrow(international_resubmitted_3[international_resubmitted_3$difference_date>=60,])
-
-
-
